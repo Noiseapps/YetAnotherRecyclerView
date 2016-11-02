@@ -1,5 +1,6 @@
 <resources>
     <string name="loading">Loading…</string>
+    <string name="app_name">YetAnotherRecyclerView</string>
     <string name="error">Error loading data</string>
     <string name="empty">No content</string>
 </resources>
