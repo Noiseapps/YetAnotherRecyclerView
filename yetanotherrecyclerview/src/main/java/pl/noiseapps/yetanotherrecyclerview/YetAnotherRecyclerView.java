@@ -2,6 +2,9 @@ package pl.noiseapps.yetanotherrecyclerview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class YetAnotherRecyclerView extends FrameLayout {
 
@@ -212,8 +217,29 @@ public class YetAnotherRecyclerView extends FrameLayout {
         return swipeRefresh;
     }
 
-    public void setRefreshListener(SwipeRefreshLayout.OnRefreshListener refreshListener) {
-        swipeRefresh.setOnRefreshListener(refreshListener);
-        swipeRefresh.setSize(SwipeRefreshLayout.LARGE);
+    public void setRefreshListener(@Nullable SwipeRefreshLayout.OnRefreshListener refreshListener) {
+        if (refreshListener != null) {
+            swipeRefresh.setOnRefreshListener(refreshListener);
+        }
+    }
+
+    public void setErrorMessage(@NonNull String message) {
+        ((TextView) findViewById(R.id.recyclerErrorText)).setText(message);
+    }
+
+    public void setErrorImage(@NonNull Drawable message) {
+        ((ImageView) findViewById(R.id.recyclerErrorImage)).setImageDrawable(message);
+    }
+
+    public void setEmptyMessage(@NonNull String message) {
+        ((TextView) findViewById(R.id.recyclerErrorText)).setText(message);
+    }
+
+    public void setEmptyImage(@NonNull Drawable message) {
+        ((ImageView) findViewById(R.id.recyclerEmptyImage)).setImageDrawable(message);
+    }
+
+    public void setLoadingMessage(@NonNull String message) {
+        ((TextView) findViewById(R.id.recyclerProgressText)).setText(message);
     }
 }
