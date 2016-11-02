@@ -312,6 +312,7 @@ public class YetAnotherRecyclerView extends FrameLayout {
         swipeRefresh.setRefreshing(false);
     }
 
+    @Retention(RetentionPolicy.SOURCE)
     @IntDef({STATE_NORMAL, STATE_LOADING, STATE_EMPTY, STATE_ERROR})
     public @interface ViewStates {
 
