@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="swipeRefresh" type="id"/>
+    <item name="recycler" type="id"/>
+    <item name="emptyView" type="id"/>
+    <item name="emptyViewContent" type="id"/>
+    <item name="errorView" type="id"/>
+    <item name="errorViewContent" type="id"/>
+    <item name="loadingViewContent" type="id"/>
+
+    <item name="recyclerEmptyImage" type="id"/>
+    <item name="recyclerEmptyText" type="id"/>
+    <item name="recyclerErrorImage" type="id"/>
+    <item name="recyclerErrorText" type="id"/>
+    <item name="recyclerProgressText" type="id"/>
+</resources>

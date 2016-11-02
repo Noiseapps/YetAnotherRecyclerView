@@ -1,0 +1,5 @@
+<resources>
+    <string name="loading">Loading…</string>
+    <string name="error">Error loading data</string>
+    <string name="empty">No content</string>
+</resources>
