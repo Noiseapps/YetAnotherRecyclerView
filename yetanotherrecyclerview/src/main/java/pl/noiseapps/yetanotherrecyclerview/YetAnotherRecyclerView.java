@@ -3,11 +3,13 @@ package pl.noiseapps.yetanotherrecyclerview;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spanned;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,19 +18,23 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class YetAnotherRecyclerView extends FrameLayout {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
+@SuppressWarnings("unused")
+public class YetAnotherRecyclerView extends FrameLayout {
+    public static final int STATE_NORMAL = 1;
+    public static final int STATE_LOADING = 2;
+    public static final int STATE_EMPTY = 3;
+    public static final int STATE_ERROR = 4;
     private int mainViewId = R.layout.main_view;
     private int emptyId;
     private int errorId;
     private int progressId;
-
     private RecyclerView recycler;
     private ViewStub loadingStub;
-
     private NestedScrollView emptyView;
     private NestedScrollView errorView;
-
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView.Adapter adapter;
@@ -59,11 +65,11 @@ public class YetAnotherRecyclerView extends FrameLayout {
         emptyView = (NestedScrollView) findViewById(R.id.emptyView);
         errorView = (NestedScrollView) findViewById(R.id.errorView);
 
-        ViewStub emptyStub = (ViewStub) findViewById(R.id.emptyViewContent);
+        final ViewStub emptyStub = (ViewStub) findViewById(R.id.emptyViewContent);
         emptyStub.setLayoutResource(emptyId);
         emptyStub.inflate();
 
-        ViewStub errorStub = (ViewStub) findViewById(R.id.errorViewContent);
+        final ViewStub errorStub = (ViewStub) findViewById(R.id.errorViewContent);
         errorStub.setLayoutResource(errorId);
         errorStub.inflate();
 
@@ -95,6 +101,7 @@ public class YetAnotherRecyclerView extends FrameLayout {
         }
     }
 
+
     public void initRecyclerView(RecyclerView.LayoutManager layoutManager, RecyclerView.Adapter adapter) {
         setLayoutManager(layoutManager);
         setAdapter(adapter);
@@ -120,88 +127,26 @@ public class YetAnotherRecyclerView extends FrameLayout {
         swipeRefresh.setRefreshing(refreshing);
     }
 
-    private void hideAll() {
-        hideList();
-        hideError();
-        hideEmpty();
-        hideProgress();
-    }
-
-    public void showError() {
-        errorView.setVisibility(View.VISIBLE);
-    }
-
-    public void showList() {
-        hideAll();
-        recycler.setVisibility(View.VISIBLE);
-    }
-
-    public void showEmpty() {
-        emptyView.setVisibility(View.VISIBLE);
-    }
-
-    public void showProgress() {
-        loadingStub.setVisibility(View.VISIBLE);
-    }
-
-    public void hideError() {
-        errorView.setVisibility(View.GONE);
-    }
-
-    public void hideList() {
-        recycler.setVisibility(View.GONE);
-    }
-
-    public void hideEmpty() {
-        emptyView.setVisibility(View.GONE);
-    }
-
-    public void hideProgress() {
-        swipeRefresh.setRefreshing(false);
-        loadingStub.setVisibility(View.GONE);
-    }
-
-    public void toggleErrorViewState(boolean show) {
-        hideAll();
-        if (show) {
-            errorView.setVisibility(View.VISIBLE);
-        } else {
-            recycler.setVisibility(View.VISIBLE);
+    public void setState(@ViewStates int viewState) {
+        switch (viewState) {
+            case STATE_EMPTY:
+                hideAll();
+                showEmpty();
+                break;
+            case STATE_ERROR:
+                hideAll();
+                showError();
+                break;
+            case STATE_LOADING:
+                hideAll();
+                showProgress();
+                break;
+            case STATE_NORMAL:
+            default:
+                hideAll();
+                showList();
+                break;
         }
-    }
-
-    public void toggleEmptyViewState(boolean show) {
-        hideAll();
-        if (show) {
-            emptyView.setVisibility(View.VISIBLE);
-        } else {
-            recycler.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void toggleLoadingViewState(boolean show) {
-        hideAll();
-        if (show) {
-            errorView.setVisibility(View.VISIBLE);
-        } else {
-            swipeRefresh.setRefreshing(false);
-            recycler.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void setAdapter(RecyclerView.Adapter adapter, boolean swap, boolean recycleViews) {
-        if (swap && this.adapter != null) {
-            recycler.setAdapter(adapter);
-        } else {
-            recycler.swapAdapter(adapter, recycleViews);
-        }
-        this.adapter = adapter;
-        if (adapter.getItemCount() == 0) {
-            toggleEmptyViewState(true);
-        } else {
-            showList();
-        }
-        swipeRefresh.setRefreshing(false);
     }
 
     public RecyclerView.LayoutManager getLayoutManager() {
@@ -223,23 +168,153 @@ public class YetAnotherRecyclerView extends FrameLayout {
         }
     }
 
+    /**
+     * Sets message when an error state is showing
+     *
+     * @param message {@link String message}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerErrorText</code> NOTE: there is no @+id
+     */
     public void setErrorMessage(@NonNull String message) {
         ((TextView) findViewById(R.id.recyclerErrorText)).setText(message);
     }
 
-    public void setErrorImage(@NonNull Drawable message) {
-        ((ImageView) findViewById(R.id.recyclerErrorImage)).setImageDrawable(message);
-    }
-
-    public void setEmptyMessage(@NonNull String message) {
+    /**
+     * Sets message when an error state ({@link ViewStates}) is showing
+     *
+     * @param message {@link Spanned} message
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerErrorText</code> NOTE: there is no @+id
+     */
+    public void setErrorMessage(@NonNull Spanned message) {
         ((TextView) findViewById(R.id.recyclerErrorText)).setText(message);
     }
 
-    public void setEmptyImage(@NonNull Drawable message) {
-        ((ImageView) findViewById(R.id.recyclerEmptyImage)).setImageDrawable(message);
+    /**
+     * Sets image when an empty state ({@link ViewStates}) is showing
+     *
+     * @param image {@link Drawable image}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link ImageView} with id <code>@id/recyclerErrorImage</code> NOTE: there is no @+id
+     */
+    public void setErrorImage(@NonNull Drawable image) {
+        ((ImageView) findViewById(R.id.recyclerErrorImage)).setImageDrawable(image);
     }
 
+    /**
+     * Sets message when an empty state ({@link ViewStates}) is showing
+     *
+     * @param message {@link String message}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerEmptyText</code> NOTE: there is no @+id
+     */
+    public void setEmptyMessage(@NonNull String message) {
+        ((TextView) findViewById(R.id.recyclerEmptyText)).setText(message);
+    }
+
+    /**
+     * Sets message when an empty state ({@link ViewStates}) is showing
+     *
+     * @param message {@link Spanned message}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerEmptyText</code> NOTE: there is no @+id
+     */
+    public void setEmptyMessage(@NonNull Spanned message) {
+        ((TextView) findViewById(R.id.recyclerEmptyText)).setText(message);
+    }
+
+    /**
+     * Sets image when an empty state ({@link ViewStates}) is showing
+     *
+     * @param image {@link Drawable image}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link ImageView} with id <code>@id/recyclerEmptyImage</code> NOTE: there is no @+id
+     */
+    public void setEmptyImage(@NonNull Drawable image) {
+        ((ImageView) findViewById(R.id.recyclerEmptyImage)).setImageDrawable(image);
+    }
+
+    /**
+     * Sets message when an loading state ({@link ViewStates}) is showing
+     *
+     * @param message {@link String message}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerEmptyText</code> NOTE: there is no @+id
+     */
     public void setLoadingMessage(@NonNull String message) {
         ((TextView) findViewById(R.id.recyclerProgressText)).setText(message);
+    }
+
+    /**
+     * Sets message when an loading state ({@link ViewStates}) is showing
+     *
+     * @param message {@link Spanned message}
+     * @throws android.content.res.Resources.NotFoundException if custom error view is used that
+     *                                                         does not contain {@link TextView} with id <code>@id/recyclerEmptyText</code> NOTE: there is no @+id
+     */
+    public void setLoadingMessage(@NonNull Spanned message) {
+        ((TextView) findViewById(R.id.recyclerProgressText)).setText(message);
+    }
+
+    private void hideAll() {
+        hideList();
+        hideError();
+        hideEmpty();
+        hideProgress();
+    }
+
+    private void showError() {
+        errorView.setVisibility(View.VISIBLE);
+    }
+
+    private void showList() {
+        hideAll();
+        recycler.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmpty() {
+        emptyView.setVisibility(View.VISIBLE);
+    }
+
+    private void showProgress() {
+        loadingStub.setVisibility(View.VISIBLE);
+    }
+
+    private void hideError() {
+        errorView.setVisibility(View.GONE);
+    }
+
+    private void hideList() {
+        recycler.setVisibility(View.GONE);
+    }
+
+    private void hideEmpty() {
+        emptyView.setVisibility(View.GONE);
+    }
+
+    private void hideProgress() {
+        swipeRefresh.setRefreshing(false);
+        loadingStub.setVisibility(View.GONE);
+    }
+
+    private void setAdapter(RecyclerView.Adapter adapter, boolean swap, boolean recycleViews) {
+        if (swap && this.adapter != null) {
+            recycler.setAdapter(adapter);
+        } else {
+            recycler.swapAdapter(adapter, recycleViews);
+        }
+        this.adapter = adapter;
+        if (adapter.getItemCount() == 0) {
+            setState(STATE_EMPTY);
+        } else {
+            showList();
+        }
+        swipeRefresh.setRefreshing(false);
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({STATE_NORMAL, STATE_LOADING, STATE_EMPTY, STATE_ERROR})
+    public @interface ViewStates {
+
     }
 }
