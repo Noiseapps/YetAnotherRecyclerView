@@ -307,12 +307,11 @@ public class YetAnotherRecyclerView extends FrameLayout {
         if (adapter.getItemCount() == 0) {
             setState(STATE_EMPTY);
         } else {
-            showList();
+            setState(STATE_NORMAL);
         }
         swipeRefresh.setRefreshing(false);
     }
 
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({STATE_NORMAL, STATE_LOADING, STATE_EMPTY, STATE_ERROR})
     public @interface ViewStates {
 
