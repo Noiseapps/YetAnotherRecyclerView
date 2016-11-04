@@ -303,13 +303,25 @@ public class YetAnotherRecyclerView extends FrameLayout {
         } else {
             recycler.swapAdapter(adapter, recycleViews);
         }
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                update();
+            }
+        });
         this.adapter = adapter;
-        if (adapter.getItemCount() == 0) {
+        update();
+        swipeRefresh.setRefreshing(false);
+    }
+
+
+    private void update() {
+        if (recycler.getAdapter().getItemCount() == 0) {
             setState(STATE_EMPTY);
         } else {
             setState(STATE_NORMAL);
         }
-        swipeRefresh.setRefreshing(false);
     }
 
     @Retention(RetentionPolicy.SOURCE)
